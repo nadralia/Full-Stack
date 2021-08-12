@@ -5,6 +5,8 @@ const path = require("path");
 require("dotenv").config();
 const cors = require("cors");
 
+// routes
+const usersRoutes = require("./server/routes/user.route");
 
 const app = express();
 
@@ -22,12 +24,16 @@ mongoose.connect(DBURI, {
 });
 
 
-//test database connection
+//database connection
 let db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", function () {
   console.log("Database connected succefully...");
 });
+
+// main routes
+app.use("/api/users", usersRoutes);
+
 
 // App's connection port
 const PORT = process.env.PORT || 5000;
