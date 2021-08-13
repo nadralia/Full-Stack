@@ -182,4 +182,224 @@ exports.createUser = (req, res) => {
   checkUsernameExists();
 };
 
+exports.editUser = (req, res) => {
+  User.findById(req.user.id, (err, userToUpdate) => {
+    if (err) {
+      res.status(400).json({ message: "Error getting user try gain" });
+    } else {
+      let updatedUser = {
+        password: req.body.password ? req.body.password : userToUpdate.password,
+        firstName: req.body.firstName ? req.body.firstName : userToUpdate.firstName,
+        lastName: req.body.lastName ? req.body.lastName : userToUpdate.lastName,
+        email: req.body.email ? req.body.email : userToUpdate.email,
+        gender: req.body.gender ? req.body.gender : userToUpdate.gender,
+        nationality: req.body.nationality
+          ? req.body.nationality
+          : userToUpdate.nationality,
+        birthDate: req.body.birthDate ? req.body.birthDate : userToUpdate.birthDate,
+        isSeller: req.body.isSeller ? req.body.isSeller : userToUpdate.isSeller
+      };
+
+      if (userToUpdate.email === req.body.email) {
+        User.findOne({ username: req.body.username }, (err, userWithSameUsername) => {
+          if (err) {
+            res.status(400).json({
+              message: "Error getting username"
+            });
+          } else if (userWithSameUsername) {
+            res.status(400).json({
+              message: "Username is taken"
+            });
+          } else {
+
+            if (req.body.password !== req.body.verifyPassword) {
+              return res.status(400).json({ message: "Password doesn't match" });
+            }
+            bcrypt.genSalt(10, (err, salt) => {
+              if (err) throw err;
+              if (req.body.password === "") {
+                User.findByIdAndUpdate(req.user.id, updatedUser, {
+                  new: true,
+                  useFindAndModify: false
+                })
+                  .select("-password")
+                  .then(user => {
+                    jwt.sign(
+                      {
+                        id: user.id,
+                        isAdmin: user.isAdmin,
+                        isSeller: user.isSeller,
+                        isCustomer: user.isCustomer,
+                        isShipper: user.isShipper,
+                        isRestricted: user.isRestricted
+                      },
+                      jwtSecret,
+                      { expiresIn: 3600 },
+                      (err, token) => {
+                        if (err) throw err;
+                        res.status(200).json({
+                          token,
+                          message: "Account settings updated",
+                          user
+                        });
+                      }
+                    );
+                  })
+                  .catch(err => {
+                    res.status(400).json({
+                      message: "Couldn't update",
+                      err
+                    });
+                  });
+              } else {
+                bcrypt.hash(updatedUser.password, salt, (err, hash) => {
+                  if (err) throw err;
+
+                  updatedUser.password = hash;
+
+                  User.findByIdAndUpdate(req.user.id, updatedUser, {
+                    new: true,
+                    useFindAndModify: false
+                  })
+                    .select("-password")
+                    .then(user => {
+                      jwt.sign(
+                        {
+                          id: user.id,
+                          isAdmin: user.isAdmin,
+                          isSeller: user.isSeller,
+                          isCustomer: user.isCustomer,
+                          isShipper: user.isShipper,
+                          isRestricted: user.isRestricted
+                        },
+                        jwtSecret,
+                        { expiresIn: 3600 },
+                        (err, token) => {
+                          if (err) throw err;
+                          res.status(200).json({
+                            token,
+                            message: "Account settings updated",
+                            user
+                          });
+                        }
+                      );
+                    })
+                    .catch(err => {
+                      res.status(400).json({
+                        message: "Couldn't update",
+                        err
+                      });
+                    });
+                });
+              }
+            });
+          }
+        });
+      } else {
+        if (req.body.password !== req.body.verifyPassword) {
+          return res.status(400).json({ message: "Password doesn't match" });
+        }
+        User.findOne({ email: req.body.email }, (err, userWithSameEmail) => {
+          if (err) {
+            res.status(400).json({
+              message: "Error getting email try gain"
+            });
+          } else if (userWithSameEmail) {
+            res.status(400).json({ message: "This email is taken" });
+          } else {
+            User.findOne({ username: req.body.username }, (err, userWithSameUsername) => {
+              if (err) {
+                res.status(400).json({
+                  message: "Error getting username"
+                });
+              } else if (userWithSameUsername) {
+                res.status(400).json({ message: "Username is taken" });
+              } else {
+                bcrypt.genSalt(10, (err, salt) => {
+                  if (err) throw err;
+
+                  if (req.body.password === "") {
+                    User.findByIdAndUpdate(req.user.id, updatedUser, {
+                      new: true,
+                      useFindAndModify: false
+                    })
+                      .select("-password")
+                      .then(user => {
+                        jwt.sign(
+                          {
+                            id: user.id,
+                            isAdmin: user.isAdmin,
+                            isSeller: user.isSeller,
+                            isCustomer: user.isCustomer,
+                            isShipper: user.isShipper,
+                            isRestricted: user.isRestricted
+                          },
+                          jwtSecret,
+                          { expiresIn: 3600 },
+                          (err, token) => {
+                            if (err) throw err;
+                            res.status(200).json({
+                              token,
+                              message: "Account settings updated",
+                              user
+                            });
+                          }
+                        );
+                      })
+                      .catch(err => {
+                        res.status(400).json({
+                          message: "Couldn't update",
+                          err
+                        });
+                      });
+                  } else {
+                    bcrypt.hash(updatedUser.password, salt, (err, hash) => {
+                      if (err) throw err;
+
+                      updatedUser.password = hash;
+
+                      User.findByIdAndUpdate(req.user.id, updatedUser, {
+                        new: true,
+                        useFindAndModify: false
+                      })
+                        .select("-password")
+                        .then(user => {
+                          jwt.sign(
+                            {
+                              id: user.id,
+                              isAdmin: user.isAdmin,
+                              isSeller: user.isSeller,
+                              isCustomer: user.isCustomer,
+                              isShipper: user.isShipper,
+                              isRestricted: user.isRestricted
+                            },
+                            jwtSecret,
+                            { expiresIn: 3600 },
+                            (err, token) => {
+                              if (err) throw err;
+                              res.status(200).json({
+                                token,
+                                message: "Account settings updated",
+                                user
+                              });
+                            }
+                          );
+                        })
+                        .catch(err => {
+                          res.status(400).json({
+                            message: "Couldn't update",
+                            err
+                          });
+                        });
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    }
+  });
+};
 

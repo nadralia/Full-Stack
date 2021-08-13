@@ -19,6 +19,29 @@ const auth = (req, res, next) => {
   }
 };
 
+const sellerAuth = (req, res, next) => {
+  const { isSeller } = req.user;
+
+  if (!isSeller) {
+    res.status(401).json({ message: "You aren't a seller" });
+  } else next();
+};
+
+const adminAuth = (req, res, next) => {
+  const { isAdmin } = req.user;
+
+  if (!isAdmin) {
+    res.status(401).json({ message: "Authorization denied, only Admins" });
+  } else next();
+};
 
 
-module.exports = { auth};
+const shipperAuth = (req, res, next) => {
+  const { isShipper } = req.user;
+
+  if (!isShipper) {
+    res.status(401).json({ message: "Ooooof, ship" });
+  } else next();
+};
+
+module.exports = { auth, sellerAuth, adminAuth, shipperAuth };
