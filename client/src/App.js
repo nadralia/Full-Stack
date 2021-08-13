@@ -1,24 +1,106 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import "font-awesome/css/font-awesome.min.css";
+import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+import "./style/index.scss";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import ScrollToTop from "./components/ScrollToTop";
+import HomePage from "./components/home/HomePage";
+import MainNavbar from "./components/MainNavbar";
+import MainFooter from "./components/MainFooter";
+import Dashboard from "./components/dashboard/Dashboard";
+import Categories from "./components/Categories";
+import AddCategoryForm from "./components/dashboard/AddCategoryForm";
+import CategoryProducts from "./components/CategoryProducts";
+import AllProducts from "./components/AllProducts";
+import SingleProduct from "./components/SingleProduct";
+import EditCategories from "./components/dashboard/EditCategories";
+import EditProducts from "./components/dashboard/EditProducts";
+import AddProductForm from "./components/dashboard/AddProductForm";
+import SignUpForm from "./components/auth/SignUpForm";
+import LoginForm from "./components/auth/LoginForm";
+import AllUsersPermissions from "./components/dashboard/AllUsersPermissions";
+import Cart from "./components/cart/Cart";
+import CheckOut from "./components/cart/CheckOut";
+import AccountSettings from "./components/account/AccountSettings";
+import Addresses from "./components/account/Addresses";
+import OrdersHistory from "./components/account/OrdersHistory";
+import WishList from "./components/account/WishList";
+import AddAddressForm from "./components/account/AddAddressForm";
+import EditAddressForm from "./components/account/EditAddressForm";
+import EditAccountForm from "./components/account/EditAccountForm";
+import OrdersToShip from "./components/dashboard/OrdersToShip";
+import ShippedOrders from "./components/dashboard/ShippedOrders";
+import OrdersToDeliver from "./components/dashboard/OrdersToDeliver";
+import DeliveredOrders from "./components/dashboard/DeliveredOrders";
+import AllShippersList from "./components/dashboard/AllShippersList";
+import AllAdminsList from "./components/dashboard/AllAdminsList";
+import Page404 from "./components/404";
+import GeneralSpinner from "./components/GeneralSpinner";
+import { loadUser } from "./redux/actions/auth-actions/loadUser";
+import { useDispatch, useSelector } from "react-redux";
 
-function App() {
+const App = () => {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(loadUser());
+  }, [dispatch]);
+
+  const { user, loading, auth } = useSelector(state => state.userrr);
+
+  const generateRoute = (path, compt) => {
+    if (user && auth.isCustomer && !loading) {
+      return <Route path={path} component={compt} exact />;
+    } else if (loading) {
+      return <Route path={path} component={GeneralSpinner} exact />;
+    } else if ((!user && !auth.customer && !loading)) {
+      return <Route path={path} component={Page404} exact />;
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <ScrollToTop />
+      <ToastContainer />
+      <div className='App'>
+        <MainNavbar />
+        <div className='page-body'>
+          <Switch>
+            <Route path='/' component={HomePage} exact />
+            <Route path='/signup' component={SignUpForm} />
+            <Route path='/login' component={LoginForm} />
+            <Route path='/product/:id' component={SingleProduct} />
+            <Route path='/categories' component={Categories} />
+            <Route path='/products' component={AllProducts} />
+            <Route path='/category/:id' component={CategoryProducts} />
+            {generateRoute("/settings", AccountSettings)}
+            {generateRoute("/settings/edit_account", EditAccountForm)}
+            {generateRoute("/my_orders", OrdersHistory)}
+            {generateRoute("/my_addresses", Addresses)}
+            {generateRoute("/my_addresses/add_address", AddAddressForm)}
+            {generateRoute("/my_addresses/edit_address", EditAddressForm)}
+            {generateRoute("/wish_list", WishList)}
+            {generateRoute("/dashboard", Dashboard)}
+            {generateRoute("/addCategory", AddCategoryForm)}
+            {generateRoute("/editCategories", EditCategories)}
+            {generateRoute("/permissions", AllUsersPermissions)}
+            {generateRoute("/dashboard/admin/admins_permissions", AllAdminsList)}
+            {generateRoute("/dashboard/admin/shippers_permissions", AllShippersList)}
+            {generateRoute("/addProduct", AddProductForm)}
+            {generateRoute("/editProducts", EditProducts)}
+            {generateRoute("/dashboard/seller/orders_to_ship", OrdersToShip)}
+            {generateRoute("/dashboard/seller/shipped_orders", ShippedOrders)}
+            {generateRoute("/dashboard/shipper/orders_to_deliver", OrdersToDeliver)}
+            {generateRoute("/dashboard/shipper/delivered_orders", DeliveredOrders)}
+            {generateRoute("/cart", Cart)}
+            {generateRoute("/checkout", CheckOut)}
+            <Route component={Page404} />
+          </Switch>
+        </div>
+        <MainFooter />
+      </div>
+    </Router>
   );
 }
 
